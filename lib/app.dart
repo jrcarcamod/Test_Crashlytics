@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:siprocalsdk_chronos/siprocalsdk_chronos.dart';
 
 import 'crashlytics_service.dart';
+
+final _siprocalPlugin = SiprocalsdkChronos();
 
 class MyApp extends StatelessWidget {
   const MyApp({required this.service, super.key});
@@ -38,6 +43,9 @@ class _CrashTestScreenState extends State<CrashTestScreen> {
   void initState() {
     super.initState();
     _initialize();
+    if(Platform.isIOS){
+      _siprocalPlugin.requestPushPermission();
+    }
   }
 
   Future<void> _initialize() async {

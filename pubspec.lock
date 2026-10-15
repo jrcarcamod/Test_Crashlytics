@@ -110,6 +110,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  flutter_plugin_android_lifecycle:
+    dependency: transitive
+    description:
+      name: flutter_plugin_android_lifecycle
+      sha256: "3854fe5e3bff0b113c658f260b90c95dea17c92db0f2addeac2e343dd9969785"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.35"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -187,6 +195,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
+  siprocalsdk_chronos:
+    dependency: "direct main"
+    description:
+      name: siprocalsdk_chronos
+      sha256: d8cd0e332354ececd6384ac59cc3fee71470d172a3eedfa78ca9a8e3d256ed2c
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.12.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -266,4 +282,4 @@ packages:
     version: "1.1.1"
 sdks:
   dart: ">=3.10.8 <4.0.0"
-  flutter: ">=3.27.0"
+  flutter: ">=3.38.0"
