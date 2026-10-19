@@ -1,84 +1,116 @@
-# Prueba de Firebase Crashlytics en iOS
+# iOS Firebase Crashlytics Test
 
-Aplicación Flutter **solo para iOS** con una pantalla en español y el botón **Generar crash**. El botón provoca un cierre nativo real mediante `FirebaseCrashlytics.instance.crash()`. Antes del cierre se agrega `test_type=native_crash` y un log para identificar la prueba.
+This Flutter application verifies that an intentional native crash appears in your Firebase Crashlytics console while the Siprocal / DigitalReef SDK is integrated. The `crash-sdk` branch includes the SDK; `crash-without-sdk` provides a comparison with only Firebase Crashlytics.
 
-## Firebase configurado
+The **Generar crash** button calls `FirebaseCrashlytics.instance.crash()` and deliberately closes the app. This tests crash reporting with the SDK present; it does not reproduce a crash caused by the SDK. Before crashing, the app adds `test_type=native_crash` and a log entry.
 
-- Proyecto: `demos-b1781`.
-- App iOS: `1:115545856173:ios:70038e6588e4b3f00a0e24`.
-- Bundle ID: `com.digitalreef.DigitalReefDevApp` en Debug, Profile y Release.
-- Configuración existente: `ios/Runner/GoogleService-Info.plist`, incluida en los recursos de Runner.
-- [Consola de Crashlytics](https://console.firebase.google.com/project/demos-b1781/crashlytics).
+## Required configuration
 
-La app inicializa Firebase desde el plist nativo y habilita la recopilación de Crashlytics, incluso en Debug. También registra errores fatales del framework Flutter y errores asíncronos sin capturar. Si la inicialización falla, muestra **Reintentar** y mantiene el crash deshabilitado.
+These files are intentionally empty and remain at the paths already referenced by Xcode:
 
-El archivo `GoogleService-Info.plist` se conserva localmente y está excluido de Git. Al crear otro checkout, copia el archivo proporcionado antes de compilar:
+| File | Contents you must provide |
+| --- | --- |
+| `ios/Runner/GoogleService-Info.plist` | The complete Firebase configuration for your own iOS app. |
+| `ios/Runner/LocalConfig.plist` | The complete Siprocal / DigitalReef configuration for your organization (`crash-sdk` only). |
 
-```sh
-cp /Users/josecarcamo/Downloads/GoogleService-Info-2.plist ios/Runner/GoogleService-Info.plist
+Fill the required files and configure signing and App Groups before running. Empty files are delivery placeholders, not working configurations.
+
+### Firebase: GoogleService-Info.plist
+
+1. Open your project in the [Firebase console](https://console.firebase.google.com/).
+2. Under **Project settings → General → Your apps**, register or select an iOS app whose bundle identifier matches **Runner → Signing & Capabilities → Bundle Identifier** in Xcode. If you use a different identifier, update Runner in Debug, Profile, and Release and register that identifier in Firebase.
+3. Download that iOS app's **GoogleService-Info.plist**.
+4. Paste the **entire contents** of the downloaded file, including its XML structure, into `ios/Runner/GoogleService-Info.plist`. Alternatively, copy the downloaded file over the empty one:
+
+   ```sh
+   cp /path/to/your/GoogleService-Info.plist ios/Runner/GoogleService-Info.plist
+   ```
+
+Use all fields supplied by Firebase, including `API_KEY`, `GOOGLE_APP_ID`, `GCM_SENDER_ID`, `PROJECT_ID`, and `BUNDLE_ID`. They must belong to your project and iOS app. Keep the exact filename `GoogleService-Info.plist`.
+
+Firebase initialization and the Xcode resource reference are already configured. See [Firebase's Apple configuration instructions](https://firebase.google.com/docs/ios/setup).
+
+### SDK: LocalConfig.plist (`crash-sdk` only)
+
+Paste the full SDK configuration supplied for your organization into `ios/Runner/LocalConfig.plist`. This is the Siprocal / DigitalReef configuration, not a second Firebase configuration.
+
+The existing integration uses this structure. Replace the three `YOUR_...` values with the values supplied for your SDK account and confirm the remaining options against your integration settings:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>organizationType</key>
+    <string>static</string>
+    <key>organization</key>
+    <string>YOUR_SDK_ORGANIZATION</string>
+    <key>organizationId</key>
+    <string>YOUR_SDK_ORGANIZATION_ID</string>
+    <key>baseOrganization</key>
+    <string>YOUR_SDK_BASE_ORGANIZATION</string>
+    <key>orgSelection</key>
+    <string>HOST_APP</string>
+    <key>timerTriggerConfig</key>
+    <string>86400</string>
+    <key>version</key>
+    <string>2</string>
+    <key>buildType</key>
+    <string>SDK</string>
+    <key>variant</key>
+    <string>chronos</string>
+</dict>
+</plist>
 ```
 
-## Requisitos y ejecución
+The `crash-without-sdk` branch does not use LocalConfig.plist or the SDK notification extension.
 
-Se necesita macOS, Flutter, Xcode con herramientas de línea de comandos y CocoaPods. El proyecto requiere **iOS 15 o posterior** por las dependencias Firebase instaladas. `pubspec.lock` y `ios/Podfile.lock` fijan las versiones resueltas. No es necesario instalar Firebase CLI ni FlutterFire CLI para esta configuración. Con Flutter 3.38 y Xcode 27, Debug compila el simulador para la arquitectura del Mac mediante `NATIVE_ARCH_ACTUAL`, evitando [el problema de verificación multi-arquitectura de Flutter](https://github.com/flutter/flutter/issues/188461). Las compilaciones de iPhone físico no usan ese ajuste. Runner adopta el ciclo de vida `UIScene` y registra los plugins al crear el motor Flutter, necesarios para iniciar con Xcode 27. [Migración oficial de Flutter](https://docs.flutter.dev/release/breaking-changes/uiscenedelegate).
+## Signing and App Groups
+
+After installing dependencies, open **`ios/Runner.xcworkspace`** in Xcode. Select your Apple development **Team** and bundle identifiers for Runner and, on `crash-sdk`, RichNotification. The extension's identifier must use the app's identifier as its prefix, for example `com.yourcompany.crashtest.RichNotification`. Runner's identifier must match the Firebase plist.
+
+On `crash-sdk`, register your own App Groups in your Apple Developer account and enable the same two groups for **Runner** and **RichNotification** under **Signing & Capabilities → App Groups**. The project retains its existing group values. Replace them with groups owned by your team when configuring your copy:
+
+| Setting | Existing value to replace |
+| --- | --- |
+| `dbAppGroup` | `group.db.digitalreef.com` |
+| `userDefaultsAppGroup` | `group.digitalreef.com` |
+
+Keep the values consistent in all four files:
+
+- `ios/Runner/Info.plist`: `dbAppGroup` and `userDefaultsAppGroup`.
+- `ios/RichNotification/Info.plist`: the same two keys.
+- `ios/Runner/Runner.entitlements`: both entries under `com.apple.security.application-groups`.
+- `ios/RichNotification/RichNotification.entitlements`: the same two group entries.
+
+Use provisioning profiles that support the existing capabilities, including App Groups and Push Notifications. This setup applies to the SDK branch.
+
+## Install and run
+
+Use macOS with Flutter, Xcode, and CocoaPods installed. Choose a device or simulator compatible with the deployment targets in Xcode; on `crash-sdk`, RichNotification currently targets iOS 27.
+
+After completing your configuration:
 
 ```sh
 flutter pub get
-flutter build ios --simulator --debug
+cd ios
+pod install
+cd ..
 open ios/Runner.xcworkspace
+flutter devices
+flutter run --release -d <iphone-device-id>
 ```
 
-Abre **Runner.xcworkspace** en Xcode. Para un iPhone físico, selecciona el target **Runner → Signing & Capabilities → Team** y elige tu equipo. El identificador debe seguir coincidiendo con el plist. La firma y el perfil de aprovisionamiento deben permitir ese Bundle ID. Si tu equipo necesita un identificador distinto, registra esa app iOS en Firebase y reemplaza su plist antes de cambiar el identificador.
+For a compatible simulator, use `flutter run --debug -d <simulator-device-id>`. Use Release on a physical iPhone so the installed app can be reopened from its icon for the crash test.
 
-Para probar en un **iPhone físico**, instala una compilación **Release**:
+## Verify the crash in your Firebase console
 
-```sh
-flutter run --release -d <iPhone>
-```
+1. Launch the app and wait for **Crashlytics listo** (Crashlytics ready).
+2. Stop the Xcode or Flutter run session, then reopen the installed app from its icon with no debugger attached.
+3. Tap **Generar crash** (generate crash). The app closes intentionally.
+4. Reopen the **same installation** with internet access and leave it open to upload the pending report. Do not uninstall between the crash and this restart.
+5. Open **your Firebase project → Crashlytics**, select your iOS app, and wait a few minutes. Find the native crash and its `test_type=native_crash` custom key.
 
-Desde Xcode, selecciona **Product → Scheme → Edit Scheme → Run → Info → Build Configuration → Release**, elige el iPhone y ejecuta. Luego termina la sesión y abre la app desde su icono. Flutter Debug en un iPhone con iOS 14 o posterior necesita las herramientas de desarrollo para iniciar; por eso la prueba del crash y el reinicio desde el icono requieren Release (o Profile). [Referencia oficial de Flutter](https://api.flutter.dev/flutter/services/RestorationManager-class.html).
+If no report appears, check your configuration, connectivity, matching bundle identifier, and restart without a debugger. If Firebase reports missing symbols, check Runner's existing **Crashlytics Upload Symbols** phase and the dSYM from the exact build that crashed.
 
-Para un **simulador**, usa `flutter run --debug -d <simulador>` o el esquema Debug de Xcode. Debug sí permite el reinicio desde el icono en el simulador; Release está destinado a dispositivos físicos.
-
-## Generar y ver el primer crash
-
-1. Instala **Release en el iPhone físico** o **Debug en el simulador**, siguiendo las instrucciones anteriores. Abre la app con internet y espera **Crashlytics listo**.
-2. Si la ejecutaste desde Xcode, presiona **Stop**; si usaste `flutter run --release` en el iPhone o `flutter run --debug` en el simulador, termina esa sesión. Abre nuevamente la app desde su icono, sin depurador conectado. Firebase recomienda desconectar el depurador porque este intercepta los fallos.
-3. Presiona **Generar crash**. La app se cerrará intencionalmente.
-4. Abre nuevamente **la misma instalación** desde su icono y déjala abierta con internet. Crashlytics envía el reporte pendiente al iniciar otra vez. No desinstales la app entre el fallo y ese reinicio.
-5. Entra a la consola de Crashlytics del proyecto `demos-b1781`, selecciona la app `com.digitalreef.DigitalReefDevApp` y espera unos minutos. Busca el fallo nativo y su clave `test_type=native_crash`.
-
-La compilación y los tests locales no confirman que un reporte ya aparezca en la consola; eso requiere esta prueba y acceso al proyecto Firebase.
-
-## Símbolos y problemas frecuentes
-
-Runner genera dSYM en todas las configuraciones. La última fase **Crashlytics Upload Symbols** ejecuta el script oficial de CocoaPods `${PODS_ROOT}/FirebaseCrashlytics/run`, con las rutas de entrada del dSYM, el ejecutable y el plist compilado. El hook `post_integrate` mantiene esa fase al final después de instalar los Pods.
-
-Si el reporte no aparece después de unos cinco minutos, confirma que reiniciaste la misma instalación, que no había depurador y que hay conexión. En Xcode puedes añadir temporalmente `-FIRDebugEnabled` en **Product → Scheme → Edit Scheme → Run → Arguments Passed On Launch** y revisar los mensajes de Crashlytics al reiniciar. Para reproducir el crash, vuelve a lanzar desde el icono sin depurador.
-
-Si Firebase muestra **Missing dSYM**, revisa la fase de símbolos y el dSYM de la compilación exacta que se cerró. Puedes subirlo manualmente:
-
-```sh
-ios/Pods/FirebaseCrashlytics/upload-symbols \
-  -gsp ios/Runner/GoogleService-Info.plist \
-  -p ios /ruta/al/Runner.app.dSYM
-```
-
-También puedes cargar el dSYM comprimido en la pestaña **dSYMs** de Crashlytics. Si falla la preparación del crash, la pantalla muestra el error y permite intentar de nuevo; los detalles quedan en el log de desarrollo.
-
-## Verificación local
-
-```sh
-dart format lib test
-flutter analyze
-flutter test
-python3 -B -m unittest discover -s test/ios -p 'test_*.py'
-flutter build ios --simulator --debug
-flutter build ios --release --no-codesign
-```
-
-La última orden verifica la compilación de iPhone sin firma; para instalarla en un dispositivo debes compilar con firma y un equipo válido.
-
-Dos verificaciones de configuración nativa previenen la regresión de inicio de iOS 27 (escena y registro de plugins). Los tests de widgets usan un servicio falso: verifican carga, habilitación, una única llamada de crash, protección frente a pulsaciones rápidas y recuperación de errores. **No generan crashes reales ni envían reportes a Firebase.**
-
-Documentación oficial: [Crashlytics para Flutter](https://firebase.google.com/docs/crashlytics/flutter/get-started), [probar Crashlytics en Apple](https://firebase.google.com/docs/crashlytics/ios/test-implementation) y [dSYM en Apple](https://firebase.google.com/docs/crashlytics/ios/get-deobfuscated-reports).
+The interface is in Spanish. **Reintentar** means retry if initialization fails. Keep your completed configuration files local rather than committing your project data.
