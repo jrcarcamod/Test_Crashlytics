@@ -29,7 +29,7 @@ class FirebaseCrashlyticsService implements CrashlyticsService {
   Future<void> prepareCrash() async {
     final crashlytics = FirebaseCrashlytics.instance;
     await crashlytics.setCustomKey('test_type', 'native_crash');
-    await crashlytics.log('Crash nativo de prueba generado desde el botón.');
+    await crashlytics.log('Native test crash triggered from the button.');
   }
 
   @override

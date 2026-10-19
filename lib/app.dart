@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'Prueba de Crashlytics',
+    title: 'Crashlytics Test',
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3159A7)),
@@ -66,7 +66,7 @@ class _CrashTestScreenState extends State<CrashTestScreen> {
       if (!mounted) return;
       setState(() {
         _initializing = false;
-        _error = 'No se pudo iniciar Firebase.';
+        _error = 'Could not initialize Firebase.';
       });
     }
   }
@@ -86,14 +86,14 @@ class _CrashTestScreenState extends State<CrashTestScreen> {
       if (!mounted) return;
       setState(() {
         _crashing = false;
-        _error = 'No se pudo preparar el crash. Inténtalo de nuevo.';
+        _error = 'Could not prepare the crash. Please try again.';
       });
     }
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Prueba de Crashlytics')),
+    appBar: AppBar(title: const Text('Crashlytics Test')),
     body: SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -106,26 +106,26 @@ class _CrashTestScreenState extends State<CrashTestScreen> {
                 const Icon(Icons.bug_report_outlined, size: 72),
                 const SizedBox(height: 24),
                 Text(
-                  'Prueba un fallo real en iOS',
+                  'Test a real iOS crash',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Este botón cerrará la app intencionalmente. '
-                  'Vuelve a abrirla con conexión a internet para enviar '
-                  'el reporte a Firebase Crashlytics.',
+                  'This button will intentionally close the app. '
+                  'Reopen it with an internet connection to send '
+                  'the report to Firebase Crashlytics.',
                 ),
                 const SizedBox(height: 24),
                 if (_initializing) ...[
                   const Center(child: CircularProgressIndicator()),
                   const SizedBox(height: 12),
                   const Text(
-                    'Iniciando Firebase…',
+                    'Initializing Firebase…',
                     textAlign: TextAlign.center,
                   ),
                 ] else if (_ready)
                   Text(
-                    _crashing ? 'Preparando crash…' : 'Crashlytics listo',
+                    _crashing ? 'Preparing crash…' : 'Crashlytics ready',
                     textAlign: TextAlign.center,
                   ),
                 if (_error != null) ...[
@@ -139,22 +139,22 @@ class _CrashTestScreenState extends State<CrashTestScreen> {
                   if (!_ready)
                     TextButton(
                       onPressed: _initialize,
-                      child: const Text('Reintentar'),
+                      child: const Text('Retry'),
                     ),
                 ],
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   onPressed: _ready && !_crashing ? _generateCrash : null,
                   icon: const Icon(Icons.warning_amber_rounded),
-                  label: const Text('Generar crash'),
+                  label: const Text('Generate crash'),
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  'En un iPhone, instala la versión Release y abre la app '
-                  'desde su icono sin el depurador conectado. '
-                  'En el simulador puedes usar Debug. '
-                  'El reporte puede tardar unos minutos en aparecer '
-                  'después de volver a abrirla.',
+                  'On an iPhone, install the Release version and open the app '
+                  'from its icon without a debugger attached. '
+                  'On the simulator, you can use Debug. '
+                  'The report may take a few minutes to appear '
+                  'after reopening the app.',
                 ),
               ],
             ),

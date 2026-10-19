@@ -2,7 +2,7 @@
 
 This Flutter application verifies that an intentional native crash appears in your Firebase Crashlytics console while the Siprocal / DigitalReef SDK is integrated. The `crash-sdk` branch includes the SDK; `crash-without-sdk` provides a comparison with only Firebase Crashlytics.
 
-The **Generar crash** button calls `FirebaseCrashlytics.instance.crash()` and deliberately closes the app. This tests crash reporting with the SDK present; it does not reproduce a crash caused by the SDK. Before crashing, the app adds `test_type=native_crash` and a log entry.
+The **Generate crash** button calls `FirebaseCrashlytics.instance.crash()` and deliberately closes the app. This tests crash reporting with the SDK present; it does not reproduce a crash caused by the SDK. Before crashing, the app adds `test_type=native_crash` and a log entry.
 
 ## Required configuration
 
@@ -105,12 +105,12 @@ For a compatible simulator, use `flutter run --debug -d <simulator-device-id>`. 
 
 ## Verify the crash in your Firebase console
 
-1. Launch the app and wait for **Crashlytics listo** (Crashlytics ready).
+1. Launch the app and wait for **Crashlytics ready**.
 2. Stop the Xcode or Flutter run session, then reopen the installed app from its icon with no debugger attached.
-3. Tap **Generar crash** (generate crash). The app closes intentionally.
+3. Tap **Generate crash**. The app closes intentionally.
 4. Reopen the **same installation** with internet access and leave it open to upload the pending report. Do not uninstall between the crash and this restart.
 5. Open **your Firebase project → Crashlytics**, select your iOS app, and wait a few minutes. Find the native crash and its `test_type=native_crash` custom key.
 
 If no report appears, check your configuration, connectivity, matching bundle identifier, and restart without a debugger. If Firebase reports missing symbols, check Runner's existing **Crashlytics Upload Symbols** phase and the dSYM from the exact build that crashed.
 
-The interface is in Spanish. **Reintentar** means retry if initialization fails. Keep your completed configuration files local rather than committing your project data.
+The interface is in English. Tap **Retry** if initialization fails. Keep your completed configuration files local rather than committing your project data.
